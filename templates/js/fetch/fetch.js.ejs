@@ -1,0 +1,59 @@
+import './fetch-polyfill'; // 引用fetch的polyfill库
+
+var Promise = require("bluebird");
+window.Promise = Promise;
+
+import * as _ from 'lodash';
+
+// 封装一个请求方法
+// 注意： 为了跟后台的fetch进行无缝衔接以用来跨域，所以将参数装成数组
+// 与标准不同的地方在于：这里"get"方法是可以传body参数，这样就可以方便快捷地让node把body里面的数据放到url参数中啦~~
+// example 1 get 请求 。
+/*
+        kFetch(['/stat/v1/rank/networked/province/:siteId',{
+            method:'GET',
+            body:JSON.stringify({
+                siteId:siteId, //必须放在第一个
+                pageNum:1,
+                pageSize:10
+            })
+        }]).then( res => {
+            // 右边第三个柱形图排名
+            console.log(res);
+        })
+*/
+
+
+export const kFetch = (array) => {
+    return new Promise( (resolve ,reject) => {
+        fetch('/dashboard/api',{
+
+            method:'POST',
+            body : JSON.stringify({
+                fetchStr : array
+            })
+        }).then( res => {
+            return res.json();
+        }).then( data => {
+            if(data.statusCode == 200){
+                resolve(data.data);
+            }else{
+                console.log('报错URL:' + array[0]);
+                console.log(data);
+                // throw new Error(JSON.stringify({
+                //     statusCode:data.statusCode,
+                //     url:array
+                // }));
+                //reject(data);
+            }
+        } )
+    });
+}
+
+
+
+
+
+
+
+

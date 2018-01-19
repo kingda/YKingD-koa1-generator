@@ -1,0 +1,53 @@
+var path = require('path');
+var koa = require('koa');
+var render = require('koa-ejs'); // 渲染ejs用的
+var send = require('koa-send'); // 一个管理静态资源的中间件
+var router = require('./server/router/main'); //路由文件
+var config = require('config'); //获取config目录下的配置文件
+var logger = require('koa-logger'); //打logger中间件
+var chalk = require('chalk') // 打颜色logger专用
+var body = require('koa-body');// body parse 中间件
+var compress = require('koa-compress') ; //压缩
+var log = console.log;
+var app = koa();
+
+//模板引擎
+render(app, {
+    root: path.join(__dirname, 'server/view'),
+    layout: false,
+    viewExt: 'ejs',
+    cache: false,
+    debug: false
+});
+
+var port = process.env.PORT || config.get('setting.serverPort');
+
+//设置一堆中间件
+app
+  .use(logger())
+  .use(body({}))
+  .use(router.routes()) // 注册路由
+  .use(router.allowedMethods()) // 注册options请求的默认方法
+  .use(compress({
+     filter: function (content_type) {
+     return true;
+  },
+  threshold: 2048,
+     flush: require('zlib').Z_SYNC_FLUSH
+  }))
+  .use(function *() { //注册静态资源
+      if(this.path.indexOf('statics') !== -1){
+            if(process.env.NODE_ENV == 'test' || process.env.NODE_ENV == 'production' || process.env.NODE_ENV == 'beta'){
+                this.response.set('Cache-Control','max-age=1000000000,public');
+            }else{
+                this.response.set('Cache-Control','max-age=0,public');
+            }
+            yield send(this, this.path.replace('//','/'), { root: __dirname + '/server/public' });
+   }})
+   .listen(port,str => { //启动监听端口
+       log(
+        chalk.bgWhiteBright.blueBright('The Server was Running On Port : ')
+           + chalk.bgWhiteBright.gray(port + ' ')
+       );
+});
+

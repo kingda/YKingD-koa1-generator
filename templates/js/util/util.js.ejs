@@ -1,0 +1,165 @@
+import * as _ from 'lodash';
+
+/**
+* @description : 类似于setInterval，但这个会立即请求一遍。
+* @param callback
+* @param dist
+* @returns null
+*/
+export const MyInterVal = (callback,dist) => {
+const init = () => {
+callback();
+setTimeout(function () {
+init();
+},dist)
+}
+init();
+}
+
+
+
+/**
+* @description : 返回[min,max)的数
+* @param min 范围
+* @param max 范围
+* @returns {*}
+*/
+export function random(min, max) {
+return Math.random() * (max - min) + min;
+}
+
+/**
+* @description : 生成随机不重复的特定数组
+* @param num 代表生成 0 ~ num-1 个数
+* @param rnum 代表要返回的大小
+* @returns {Array}
+*/
+// num 10 代表 生成 0-9 ， rnum代表返回的数组大小
+export function getRandomIndex(num,rnum) {
+
+var arr = _.range(0,num);
+var i = arr.length;
+var arr2 = [];
+while(i--){
+var j = Math.floor(Math.random()*(i+1));
+arr2.push(arr[j]);
+arr.splice(j,1);
+if(arr2.length >= rnum){
+i = 0;
+}
+}
+return arr2;
+}
+
+/**
+* @description:四舍五入
+* @param num //浮点数
+* @param dis // 保留的位数
+* @return str
+*/
+export function makeItFixed(num,dis,isNum=false) {
+try{
+if(num !== undefined){
+var num2 = parseFloat(num.toString(),10);
+
+if(num2 < 0){
+num2 = (-1)*num2;
+}
+var numStr = num2 ? num2.toString() : "0";
+
+if(numStr.indexOf(".") !== -1){
+var tempNum = num2 * Math.pow(10,dis);
+tempNum = Math.round(tempNum);
+tempNum = tempNum /  Math.pow(10,dis);
+return isNum ? tempNum : tempNum.toString();
+}else{
+return numStr;
+}
+}
+
+}catch( err ){
+console.log(err);
+}
+
+
+}
+
+/**
+* 根据两个矩形的各自的大小返回相关的缩放参数,默认 origin 是 0 0
+* @param: dw,dh,cw,ch
+*/
+export  function getScaleBound(dw,dh,cw,ch) {
+//当要放大时候
+if( dw/cw >= dh/ch){
+var scale = dh/ch;
+return {
+scale : scale,
+offsetX :  ( dw - cw * scale ) / 2 ,
+offsetY : 0,
+cw:cw * scale,
+ch:ch * scale,
+dw:dw,
+dh : dh
+}
+}
+if( dw/cw < dh/ch ){
+var scale = dw/cw;
+return {
+scale: scale,
+offsetX : 0,
+offsetY : ( dh - ch * scale ) / 2,
+cw : cw * scale ,
+ch : ch * scale ,
+dw: dw,
+dh : dh
+}
+
+}
+}
+
+/**
+* @description: 按字节数截掉字符串
+* @name : 待输入字符串
+* @num : 字节数
+*/
+export function subLongName(name,num) {
+var nameArr = _.toArray(name);
+var cur = 0;
+for(var i =0;i< nameArr.length;i++){
+cur += /^[\u4e00-\u9fa5]$/.test(nameArr[i]) ? 2 : 1;
+if(cur >= num){
+return (i+1) == nameArr.length ? name : nameArr.filter( (inner,index) => index <= i).join('') + '...';
+}
+}
+return name;
+}
+
+/**
+* @description:按千位数来加逗号
+* @param num:Number 待加的数字 dist:Number 位数
+* @return Array 字符串数组
+*/
+export function addDotBy(num,dist) {
+const arr = _.toArray(String(num)).reverse();
+const reStr = arr.length > dist ? arr.map( (str,index) => ( (index + 1) % dist == 0 && index != arr.length - 1 ) ? str + ',' : str ).join(''): arr.join('');
+return _.toArray(reStr).reverse();
+}
+
+/**
+* @description:按千位数来加逗号
+* @param num:Number 待加的数字 dist:Number 位数
+* @return String 字符串数组
+*/
+export function addDotToStr(num,dist) {
+return addDotBy(num,dist).join('');
+}
+
+export function fillRankData(arr, lengthNeeded) {
+const length = arr.length;
+if (length === lengthNeeded) {
+return arr;
+} else {
+const nextArr = new Array(lengthNeeded - length).fill({ name: '', value: 0 });
+return [...nextArr, ...arr];
+}
+}

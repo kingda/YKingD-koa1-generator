@@ -1,0 +1,53 @@
+var router = require('koa-router')({
+//prefix: '/dashboard' // 所有路由前缀
+});
+var fetch = require('node-fetch');
+var chalk = require('chalk') // 打颜色logger专用
+var config = require('config'); //config
+var log = console.log;
+var utils = require('../common/util');
+
+// json 控制端
+router.post('/api',function *(next) {
+    const fetchStr = JSON.parse(this.request.body).fetchStr;
+    //do some filter
+    var inputMethod = fetchStr[1].method ? fetchStr[1].method : "GET";
+    var inputData = fetchStr[1].body ? JSON.parse(fetchStr[1].body) : {};
+    var realUrl = utils.parseRestUrl(fetchStr[0],inputData); //替换掉有分号（:)的正则表达式
+    log(chalk.red(realUrl));
+    var urlParams = utils.jsonToUrlParam(inputData); // 将json格式的数据转换为url参数
+    var hostServer = config.get('setting.serverHost');
+    var fetchUrl = this.request.protocol + '://' + hostServer + realUrl;
+    var reqUrl = urlParams ? fetchUrl + '?' + urlParams : fetchUrl; // 如果是get请求就把参数放到url中
+    var reqFetchArr = inputMethod == "GET" ? [ reqUrl ] : [ reqUrl,fetchStr[1] ]; // get请求不传options，post请求才放
+    log(chalk.green('================ FETCH-101-ACTION  ============'));
+    log('fetchOptions : ' + JSON.stringify(reqFetchArr));
+    // push server data
+    var self = this;
+    yield fetch.apply(null,reqFetchArr).then( res => {
+        if(res.status != 200){
+            return res.text().then( text => {
+                return {
+                    statusCode : res.status,
+                    message : text
+                }
+            });
+        }else{
+            return res.json();
+        }
+    }).then( data => {
+        log('serverData:' + chalk.blue(JSON.stringify(data)));
+        log(chalk.green('===============  FETCH-111-ACTION  ============'));
+        self.response.body = data; } );
+})
+
+
+// 404
+router.get('/(.*)',function *(next) {
+        if(this.response.status == 404){
+            yield this.render('404');
+        }
+        yield next;
+});
+
+module.exports = router;

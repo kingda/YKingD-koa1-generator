@@ -1,0 +1,30 @@
+{
+  "name": "ykd-koa1-generator",
+  "version": "1.0.6",
+  "description": "koa1 application generator",
+  "deprecated": false,
+  "engines": {
+    "node": ">= 0.10"
+  },
+  "dependencies": {
+    "commander": "2.11.0",
+    "ejs": "2.5.7",
+    "mkdirp": "0.5.1",
+    "sorted-object": "2.0.1"
+  },
+  "keywords": [
+    "koa1",
+    "fetch",
+    "api",
+    "koa1-body"
+  ],
+  "license": "MIT",
+  "main": "bin/start-cli.js",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/kingda/YKingD-koa1-generator"
+  },
+  "bin": {
+    "ykoa1": "./bin/start-cli.js"
+  }
+}

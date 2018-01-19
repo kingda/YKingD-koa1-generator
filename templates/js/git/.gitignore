@@ -1,0 +1,12 @@
+/node_modules
+/config/development.json
+/.vscode/
+/.idea
+/.idea/workspace.xml
+/server/public/statics
+/server/public
+/npm-debug.log
+/.idea/workspace.xml
+/.idea/*
+.DS_Store
+server/public
